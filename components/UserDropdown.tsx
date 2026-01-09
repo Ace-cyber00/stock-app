@@ -23,16 +23,26 @@ import {
 } from "@/components/ui/avatar"
 import { LogOut } from "lucide-react";
 import NavItems from "./navItems";
+import { signOut } from "@/lib/actions/auth.actions";
 
-const UserDropdown = () => {
+const UserDropdown = ({user} : {user: User}) => {
   const router = useRouter()
 
-  const handleSignOut =async()=> {
-    router.push("/sign-in")
+ const handleSignOut = async() => {
+    try {
+      const result = await signOut()
+      
+      if(result?.success) {
+        router.push('/sign-in')
+        router.refresh()
+      } else {
+        console.error('Sign out failed:', result?.error)
+      }
+    } catch (error) {
+      console.error('Sign out error:', error)
+    }
   }
-
-  const user = {name : "John" , email: "abcd@gmail.com"}
-  
+   
   return (
   <DropdownMenu>
     
@@ -65,7 +75,9 @@ const UserDropdown = () => {
     </div>
     </DropdownMenuLabel>
    <DropdownMenuSeparator className="bg-gray-600"/> 
-    <DropdownMenuItem className="text-gray-100 text-md fond-medium focus:bg-transparent focus:text-yellow-500 transition-colors cursor-pointer ">
+    <DropdownMenuItem 
+      onClick={handleSignOut}
+      className="text-gray-100 text-md fond-medium focus:bg-transparent focus:text-yellow-500 transition-colors cursor-pointer ">
       <LogOut className="h-4 w-4 mr-2 hidden sm:block"/>
         Logout
     </DropdownMenuItem>

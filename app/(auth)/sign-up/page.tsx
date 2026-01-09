@@ -5,11 +5,15 @@ import Footer from '@/components/forms/FooterLink';
 import InputField from '@/components/forms/InputField';
 import SelectFields from '@/components/forms/SelectFields';
 import { Button } from '@/components/ui/button';
+import { signUpWithEmail } from '@/lib/actions/auth.actions';
 import { INVESTMENT_GOALS, PREFERRED_INDUSTRIES, RISK_TOLERANCE_OPTIONS } from '@/lib/constants';
+import { useRouter } from 'next/navigation';
 
 import { useForm, SubmitHandler } from 'react-hook-form'
+import { toast } from 'sonner';
 
 const SignUp = () => {
+  const router = useRouter()
  const {
          register,
          handleSubmit,
@@ -29,10 +33,21 @@ const SignUp = () => {
      })
      const onsubmit: SubmitHandler<SignUpFormData> = async (data) => {
         try {
-            console.log(data);
+           const result = await signUpWithEmail(data)
+           
+           if(result?.success) {
+             toast.success('Account created successfully!')
+             router.push('/')
+           } else {
+             toast.error('Sign-up failed', {
+               description: result?.error || 'Failed to create an account'
+             })
+           }
             
         } catch (e) {
-            console.log(e);
+            toast.error('Sign-up failed' , {
+              description: e instanceof Error ? e.message : 'Failed to create an account'
+            })
             
         }
      }
@@ -55,7 +70,13 @@ const SignUp = () => {
         placeholder = "contact@jsmastery.com"
         register = {register}
         error = {errors.email}
-        validation = {{required:'Email is req', pattern: /^w+@\w+\.\w+$/, message:"Email is required" }}
+        validation = {{
+          required:'Email is required',
+          pattern: {
+            value: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+            message: "Enter a valid email address"
+          }
+        }}
 
         />
         
@@ -79,7 +100,7 @@ const SignUp = () => {
 />
 
         <SelectFields 
-         name = "investment goals"
+         name = "investmentGoals"
          label = "Investment Goals"
          placeholder = "Select your investment goals"
          options = {INVESTMENT_GOALS}
@@ -88,7 +109,7 @@ const SignUp = () => {
          required 
         />
         <SelectFields 
-         name = "Risk Tolerance"
+         name = "riskTolerance"
          label = "Risk Tolerance"
          placeholder = "Select your risk levels"
          options = {RISK_TOLERANCE_OPTIONS}
@@ -97,7 +118,7 @@ const SignUp = () => {
          required 
         />
         <SelectFields 
-         name = "preferred industry"
+         name = "preferredIndustry"
          label = "Preferred Industry"
          placeholder = "Select your Preferred Industry"
          options = {PREFERRED_INDUSTRIES}
