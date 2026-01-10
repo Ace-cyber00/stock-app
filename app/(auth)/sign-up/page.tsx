@@ -39,8 +39,9 @@ const SignUp = () => {
              toast.success('Account created successfully!')
              router.push('/')
            } else {
-             toast.error('Sign-up failed', {
-               description: result?.error || 'Failed to create an account'
+             const errorMsg = result?.error || 'Failed to create an account'
+             toast.error(errorMsg === 'User already exists' ? 'User already exists' : 'Sign-up failed', {
+               description: errorMsg === 'User already exists' ? 'An account with this email already exists. Please sign in instead.' : errorMsg
              })
            }
             

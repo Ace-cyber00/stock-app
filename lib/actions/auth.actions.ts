@@ -29,8 +29,18 @@ export const signUpWithEmail = async({email , password , fullName , country , in
             return { success:true , data: response}
         }
         
-    } catch (e) {
-       console.log('Sign up failes' ,e)
+        console.log('Sign up failed: No response from auth API')
+        return { success: false , error: 'Sign up failed: No response from server'}
+        
+    } catch (e: any) {
+       console.log('Sign up failed' ,e)
+       
+       // Check if error is due to duplicate email
+       const errorMessage = e?.message || e?.toString() || ''
+       if (errorMessage.toLowerCase().includes('duplicate') || errorMessage.toLowerCase().includes('already exists') || errorMessage.toLowerCase().includes('unique')) {
+           return { success: false , error: 'User already exists'}
+       }
+       
        return { success: false , error: 'Sign up failed'}
         
     }
