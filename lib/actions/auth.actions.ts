@@ -6,83 +6,88 @@ import { inngest } from "../inngest/client"
 import { success } from "better-auth"
 
 
-export const signUpWithEmail = async({email , password , fullName , country , investmentGoals, preferredIndustry, riskTolerance}:SignUpFormData) => {
+export const signUpWithEmail = async ({ email, password, fullName, country, investmentGoals, preferredIndustry, riskTolerance }: SignUpFormData) => {
     try {
-        const response= await auth.api.signUpEmail({
-            body:{email , password , name:fullName}
+        const response = await auth.api.signUpEmail({
+            body: { email, password, name: fullName }
 
         })
 
-        if(response){
-            await inngest.send({
-                name:'app/user.created',
-                data:{
-                    email,
-                    name:fullName,
-                    country,
-                    investmentGoals,
-                    riskTolerance,
-                    preferredIndustry
-                }
-            })
+        if (response) {
+            // Try to send Inngest event, but don't fail signup if it errors
+            try {
+                await inngest.send({
+                    name: 'app/user.created',
+                    data: {
+                        email,
+                        name: fullName,
+                        country,
+                        investmentGoals,
+                        riskTolerance,
+                        preferredIndustry
+                    }
+                })
+            } catch (inngestError) {
+                console.log('Inngest event failed (non-critical):', inngestError)
+            }
 
-            return { success:true , data: response}
+            return { success: true, data: response }
         }
-        
+
         console.log('Sign up failed: No response from auth API')
-        return { success: false , error: 'Sign up failed: No response from server'}
-        
+        return { success: false, error: 'Sign up failed: No response from server' }
+
     } catch (e: any) {
-       console.log('Sign up failed' ,e)
-       
-       // Check if error is due to duplicate email
-       const errorMessage = e?.message || e?.toString() || ''
-       if (errorMessage.toLowerCase().includes('duplicate') || errorMessage.toLowerCase().includes('already exists') || errorMessage.toLowerCase().includes('unique')) {
-           return { success: false , error: 'User already exists'}
-       }
-       
-       return { success: false , error: 'Sign up failed'}
-        
+        console.log('Sign up failed', e)
+
+        // Check if error is due to duplicate email
+        const errorMessage = e?.message || e?.toString() || ''
+        if (errorMessage.toLowerCase().includes('duplicate') || errorMessage.toLowerCase().includes('already exists') || errorMessage.toLowerCase().includes('unique')) {
+            return { success: false, error: 'User already exists' }
+        }
+
+        return { success: false, error: 'Sign up failed' }
+
     }
 }
-export const signInWithEmail = async({email , password }:SignInFormData) => {
+export const signInWithEmail = async ({ email, password }: SignInFormData) => {
     try {
-        const response= await auth.api.signInEmail({
-            body:{email , password }
+        const response = await auth.api.signInEmail({
+            body: { email, password }
         })
 
-        return { success:true , data: response}
+        return { success: true, data: response }
     } catch (e: any) {
-       console.log('Sign in failed' ,e)
-       
-       // Check error message for specific cases
-       const errorMessage = e?.message || e?.toString() || ''
-       
-       if (errorMessage.toLowerCase().includes('user not found') || 
-           errorMessage.toLowerCase().includes('no user') ||
-           errorMessage.toLowerCase().includes('does not exist')) {
-           return { success: false , error: 'User does not exist'}
-       }
-       
-       if (errorMessage.toLowerCase().includes('password') || 
-           errorMessage.toLowerCase().includes('invalid credentials')) {
-           return { success: false , error: 'Invalid email or password'}
-       }
-       
-       return { success: false , error: 'Sign in failed'}
+        console.log('Sign in failed', e)
+
+        // Check error message for specific cases
+        const errorMessage = e?.message || e?.toString() || ''
+
+        if (errorMessage.toLowerCase().includes('user not found') ||
+            errorMessage.toLowerCase().includes('no user') ||
+            errorMessage.toLowerCase().includes('does not exist')) {
+            return { success: false, error: 'User does not exist' }
+        }
+
+        if (errorMessage.toLowerCase().includes('password') ||
+            errorMessage.toLowerCase().includes('invalid credentials')) {
+            return { success: false, error: 'Invalid email or password' }
+        }
+
+        return { success: false, error: 'Sign in failed' }
     }
 }
 
 
 
-export const signOut = async() => {
+export const signOut = async () => {
 
     try {
-        await auth.api.signOut({headers:await headers()})
-        return {success:true}
+        await auth.api.signOut({ headers: await headers() })
+        return { success: true }
     } catch (e) {
-    console.log('Sign out failed' , e)
-    return {success:false , error:'Sign out failed'}    
+        console.log('Sign out failed', e)
+        return { success: false, error: 'Sign out failed' }
     }
-    
+
 }
