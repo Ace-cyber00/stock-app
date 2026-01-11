@@ -31,16 +31,16 @@ const WatchlistButton = ({
       <button
         title={added ? `Remove ${symbol} from watchlist` : `Add ${symbol} to watchlist`}
         aria-label={added ? `Remove ${symbol} from watchlist` : `Add ${symbol} to watchlist`}
-        className={`watchlist-icon-btn ${added ? "watchlist-icon-added" : ""}`}
+        className={`watchlist-icon-btn p-2 rounded-full hover:bg-gray-700/50 transition-colors ${added ? "text-yellow-500" : "text-gray-400"}`}
         onClick={handleClick}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
-          fill={added ? "#FACC15" : "none"}
-          stroke="#FACC15"
-          strokeWidth="1.5"
-          className="watchlist-star"
+          fill={added ? "currentColor" : "none"}
+          stroke="currentColor"
+          strokeWidth="2"
+          className="w-5 h-5"
         >
           <path
             strokeLinecap="round"
