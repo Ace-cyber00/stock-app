@@ -4,7 +4,7 @@ import useTradingViewWidget from '@/hooks/useTradingViewWidget';
 import React, { useEffect, useRef, memo } from 'react';
 import { cn } from '@/lib/utils';
 interface TradingViewWidgetProps {
-    title:string;
+    title?:string;
     scriptUrl:string;
     config: Record<string , unknown>
     height?:number;

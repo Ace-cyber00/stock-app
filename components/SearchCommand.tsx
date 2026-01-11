@@ -8,7 +8,13 @@ import Link from "next/link";
 import {searchStocks} from "@/lib/actions/finnhub.actions";
 import {useDebounce} from "@/hooks/useDebounce";
 
-export default function SearchCommand({ renderAs = 'button', label = 'Add stock', initialStocks }: SearchCommandProps) {
+export default function SearchCommand({ 
+  renderAs = 'button', 
+  label = 'Add stock', 
+  initialStocks,
+  externalOpen,
+  onOpenChange 
+}: SearchCommandProps & { externalOpen?: boolean; onOpenChange?: (open: boolean) => void }) {
   const [open, setOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [loading, setLoading] = useState(false)
@@ -16,17 +22,29 @@ export default function SearchCommand({ renderAs = 'button', label = 'Add stock'
 
   const isSearchMode = !!searchTerm.trim();
   const displayStocks = isSearchMode ? stocks : stocks?.slice(0, 10);
+  
+  // Handle external open state
+  useEffect(() => {
+    if (externalOpen !== undefined) {
+      setOpen(externalOpen)
+    }
+  }, [externalOpen])
+  
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen)
+    onOpenChange?.(newOpen)
+  }
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault()
-        setOpen(v => !v)
+        handleOpenChange(!open)
       }
     }
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
-  }, [])
+  }, [open])
 
   const handleSearch = async () => {
     if(!isSearchMode) return setStocks(initialStocks);
@@ -49,23 +67,23 @@ export default function SearchCommand({ renderAs = 'button', label = 'Add stock'
   }, [searchTerm]);
 
   const handleSelectStock = () => {
-    setOpen(false);
+    handleOpenChange(false);
     setSearchTerm("");
     setStocks(initialStocks);
   }
 
   return (
     <>
-      {renderAs === 'text' ? (
-          <span onClick={() => setOpen(true)} className="search-text">
+      {renderAs === 'text' && label ? (
+          <span onClick={() => handleOpenChange(true)} className="search-text">
             {label}
           </span>
-      ): (
-          <Button onClick={() => setOpen(true)} className="search-btn">
+      ): renderAs === 'button' && label ? (
+          <Button onClick={() => handleOpenChange(true)} className="search-btn">
             {label}
           </Button>
-      )}
-      <CommandDialog open={open} onOpenChange={setOpen} className="search-dialog">
+      ) : null}
+      <CommandDialog open={open} onOpenChange={handleOpenChange} className="search-dialog">
         <div className="search-field">
           <CommandInput value={searchTerm} onValueChange={setSearchTerm} placeholder="Search stocks..." className="search-input" />
           {loading && <Loader2 className="search-loader" />}
