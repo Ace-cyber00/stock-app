@@ -178,3 +178,38 @@ export const searchStocks = cache(async (query?: string): Promise<StockWithWatch
     return [];
   }
 });
+
+export const getQuotes = async (symbols: string[]) => {
+  if (!symbols || symbols.length === 0) return {};
+
+  try {
+    const token = process.env.FINNHUB_API_KEY ?? NEXT_PUBLIC_FINNHUB_API_KEY;
+    if (!token) throw new Error('FINNHUB API key is not configured');
+
+    const quotes: Record<string, { c: number; d: number; dp: number }> = {};
+
+    await Promise.all(
+      symbols.map(async (symbol) => {
+        try {
+          const url = `${FINNHUB_BASE_URL}/quote?symbol=${encodeURIComponent(symbol)}&token=${token}`;
+          // Short cache time for real-time-ish data (e.g., 30s)
+          const data = await fetchJSON<any>(url, 30);
+          if (data && typeof data.c === 'number') {
+            quotes[symbol] = {
+              c: data.c, // Current price
+              d: data.d, // Change
+              dp: data.dp // Percent change
+            };
+          }
+        } catch (e) {
+          console.error(`Error fetching quote for ${symbol}:`, e);
+        }
+      })
+    );
+
+    return quotes;
+  } catch (error) {
+    console.error('getQuotes error:', error);
+    return {};
+  }
+};

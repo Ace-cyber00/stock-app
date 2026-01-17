@@ -9,8 +9,8 @@ import { success } from "better-auth"
 export const signUpWithEmail = async ({ email, password, fullName, country, investmentGoals, preferredIndustry, riskTolerance }: SignUpFormData) => {
     try {
         const response = await auth.api.signUpEmail({
-            body: { email, password, name: fullName }
-
+            body: { email, password, name: fullName },
+            headers: await headers()
         })
 
         if (response) {
@@ -53,7 +53,8 @@ export const signUpWithEmail = async ({ email, password, fullName, country, inve
 export const signInWithEmail = async ({ email, password }: SignInFormData) => {
     try {
         const response = await auth.api.signInEmail({
-            body: { email, password }
+            body: { email, password },
+            headers: await headers()
         })
 
         return { success: true, data: response }
